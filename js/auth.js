@@ -1,7 +1,10 @@
 // 用戶認證相關功能
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('auth.js 已載入 - 初始化認證功能');
+    
     // 檢查是否在登入/註冊頁面
     const isAuthPage = window.location.pathname.includes('login.html');
+    console.log('是否在登入頁面:', isAuthPage);
 
     // 如果不是登入頁面，直接返回
     if (!isAuthPage) return;
@@ -18,57 +21,108 @@ document.addEventListener('DOMContentLoaded', function() {
     const signupButton = document.getElementById('signup-button');
     const signupMessage = document.getElementById('signup-message');
 
+    // 檢查DOM元素是否正確獲取
+    console.log('登入表單元素是否存在:', {
+        loginUsername: !!loginUsername,
+        loginPassword: !!loginPassword,
+        loginButton: !!loginButton,
+        loginMessage: !!loginMessage
+    });
+
     // 檢查當前用戶是否已登入
     checkCurrentUser();
 
     // 註冊事件監聽器
-    loginButton.addEventListener('click', handleLogin);
-    signupButton.addEventListener('click', handleSignup);
+    if (loginButton) {
+        loginButton.addEventListener('click', handleLogin);
+        console.log('已添加登入按鈕點擊事件');
+    } else {
+        console.error('找不到登入按鈕元素，無法添加事件監聽器');
+    }
+    
+    if (signupButton) {
+        signupButton.addEventListener('click', handleSignup);
+        console.log('已添加註冊按鈕點擊事件');
+    } else {
+        console.error('找不到註冊按鈕元素，無法添加事件監聽器');
+    }
 
     // 按下Enter鍵提交表單
-    loginPassword.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            handleLogin();
-        }
-    });
+    if (loginPassword) {
+        loginPassword.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                handleLogin();
+            }
+        });
+    }
 
-    signupConfirmPassword.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            handleSignup();
-        }
-    });
+    if (signupConfirmPassword) {
+        signupConfirmPassword.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                handleSignup();
+            }
+        });
+    }
 
     // 處理登入
     async function handleLogin() {
+        console.log('執行登入處理');
+        
         // 清空消息區域
-        loginMessage.innerHTML = '';
-        loginMessage.className = 'message-box';
+        if (loginMessage) {
+            loginMessage.innerHTML = '';
+            loginMessage.className = 'message-box';
+        }
 
         // 獲取輸入值
-        const username = loginUsername.value.trim();
-        const password = loginPassword.value.trim();
+        const username = loginUsername ? loginUsername.value.trim() : '';
+        const password = loginPassword ? loginPassword.value.trim() : '';
+        console.log('登入信息:', { username, password: password ? '******' : '未輸入' });
 
         // 基本表單驗證
         if (!username || !password) {
-            loginMessage.textContent = '請填寫用戶名和密碼';
-            loginMessage.className = 'message-box error';
+            if (loginMessage) {
+                loginMessage.textContent = '請填寫用戶名和密碼';
+                loginMessage.className = 'message-box error';
+            }
+            console.error('登入表單驗證失敗：用戶名或密碼為空');
             return;
         }
 
         try {
             // 顯示載入狀態
-            loginButton.disabled = true;
-            loginButton.innerHTML = `
-                <ion-spinner name="crescent" style="width: 20px; height: 20px;"></ion-spinner>
-                <span style="margin-left: 8px;">登入中...</span>
-            `;
+            if (loginButton) {
+                loginButton.disabled = true;
+                loginButton.innerHTML = `
+                    <ion-spinner name="crescent" style="width: 20px; height: 20px;"></ion-spinner>
+                    <span style="margin-left: 8px;">登入中...</span>
+                `;
+            }
+
+            console.log('開始API登入請求...');
+            
+            // 檢查API狀態
+            try {
+                const isApiOnline = await API.checkStatus();
+                console.log('API狀態檢查結果:', isApiOnline ? '在線' : '離線');
+                
+                if (!isApiOnline) {
+                    throw new Error('API伺服器離線，無法登入');
+                }
+            } catch (apiStatusError) {
+                console.error('API狀態檢查失敗:', apiStatusError);
+                throw new Error('無法連接到API伺服器');
+            }
 
             // 呼叫登入API
             const data = await API.auth.login(username, password);
+            console.log('登入API響應:', data);
 
             // 登入成功
-            loginMessage.textContent = '登入成功！重定向中...';
-            loginMessage.className = 'message-box success';
+            if (loginMessage) {
+                loginMessage.textContent = '登入成功！重定向中...';
+                loginMessage.className = 'message-box success';
+            }
 
             // 延遲後重定向回首頁
             setTimeout(() => {
@@ -76,15 +130,20 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 1500);
         } catch (error) {
             console.error('登入失敗:', error);
-            loginMessage.textContent = error.message || '登入失敗，請檢查用戶名和密碼';
-            loginMessage.className = 'message-box error';
+            
+            if (loginMessage) {
+                loginMessage.textContent = error.message || '登入失敗，請檢查用戶名和密碼';
+                loginMessage.className = 'message-box error';
+            }
             
             // 重置按鈕狀態
-            loginButton.disabled = false;
-            loginButton.innerHTML = `
-                <span class="zh">登入</span>
-                <span class="en">Login</span>
-            `;
+            if (loginButton) {
+                loginButton.disabled = false;
+                loginButton.innerHTML = `
+                    <span class="zh">登入</span>
+                    <span class="en">Login</span>
+                `;
+            }
         }
     }
 

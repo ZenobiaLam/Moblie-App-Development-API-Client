@@ -15,13 +15,26 @@ document.addEventListener('DOMContentLoaded', function() {
     // 全局儲存瑜伽動作
     let yogaActionsData = [];
     
-    // 初始化頁面 - 從API獲取數據
-    loadYogaActions();
+    // 初始化頁面 - 檢查API狀態並載入數據
+    initPage();
     
     // 事件監聽器
     searchbar.addEventListener('ionInput', handleSearch);
     difficultyFilter.addEventListener('ionChange', handleDifficultyFilter);
     effectFilter.addEventListener('ionChange', handleEffectFilter);
+    
+    // 初始化頁面
+    async function initPage() {
+        try {
+            // 檢查API狀態
+            await API.checkStatus();
+            // 無論結果如何，都加載瑜伽動作
+            loadYogaActions();
+        } catch (error) {
+            console.error('初始化頁面失敗:', error);
+            loadYogaActions(); // 即使API檢查失敗，仍嘗試載入資料
+        }
+    }
     
     // 從API加載瑜伽動作
     async function loadYogaActions() {
@@ -50,17 +63,38 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             // 從API獲取瑜伽動作
-            const data = await API.yoga.getYogaActions(params);
-            console.log(data)
-            yogaActionsData = data.items || data || [];
-            
-            // 確保所有資料都有效果標籤
-            processYogaData(yogaActionsData);
-            
-            // 本地過濾效果（假設API不支持按效果過濾）
-            applyFilters();
+            try {
+                const data = await API.yoga.getYogaActions(params);
+                console.log('API返回數據:', data);
+                yogaActionsData = data.items || data || [];
+                
+                // 確保所有資料都有效果標籤
+                processYogaData(yogaActionsData);
+                
+                // 本地過濾效果（假設API不支持按效果過濾）
+                applyFilters();
+            } catch (apiError) {
+                console.error('API請求錯誤:', apiError);
+                // API請求失敗，嘗試使用本地數據
+                if (typeof yogaPoses !== 'undefined') {
+                    console.log('使用本地數據作為回退');
+                    yogaActionsData = yogaPoses;
+                    processYogaData(yogaActionsData);
+                    applyFilters();
+                    
+                    // 顯示輕微的錯誤提示，但不中斷用戶體驗
+                    const toast = document.createElement('ion-toast');
+                    toast.message = '無法連接到API伺服器，正在使用本地資料顯示';
+                    toast.duration = 3000;
+                    toast.position = 'bottom';
+                    document.body.appendChild(toast);
+                    toast.present();
+                } else {
+                    throw apiError; // 如果沒有本地數據，重新拋出錯誤
+                }
+            }
         } catch (error) {
-            console.error('載入瑜伽動作失敗:', error);
+            console.error('載入瑜伽動作完全失敗:', error);
             yogaList.innerHTML = `
                 <ion-item>
                     <ion-label class="ion-text-center">
@@ -70,14 +104,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     </ion-label>
                 </ion-item>
             `;
-            
-            // 如果API不可用，回退使用本地數據
-            if (typeof yogaPoses !== 'undefined') {
-                console.log('使用本地數據作為回退');
-                yogaActionsData = yogaPoses;
-                processYogaData(yogaActionsData);
-                applyFilters();
-            }
         }
     }
     

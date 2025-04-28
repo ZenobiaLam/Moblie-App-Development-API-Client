@@ -9,8 +9,41 @@ document.addEventListener('DOMContentLoaded', function() {
     // 獲取DOM元素
     const bookmarksList = document.getElementById('bookmarks-list');
 
-    // 加載收藏列表
-    loadBookmarks();
+    // 檢查API狀態並載入收藏
+    initPage();
+    
+    // 初始化頁面
+    async function initPage() {
+        try {
+            // 檢查API連接狀態
+            const isApiOnline = await API.checkStatus();
+            
+            if (!isApiOnline) {
+                // API離線時顯示錯誤
+                showApiOfflineMessage();
+                return;
+            }
+            
+            // 加載收藏列表
+            loadBookmarks();
+        } catch (error) {
+            console.error('初始化頁面失敗:', error);
+            showApiOfflineMessage();
+        }
+    }
+    
+    // 顯示API離線訊息
+    function showApiOfflineMessage() {
+        bookmarksList.innerHTML = `
+            <div class="ion-padding ion-text-center">
+                <ion-icon name="cloud-offline-outline" size="large" color="medium"></ion-icon>
+                <h2>無法連接到API伺服器</h2>
+                <p>無法載入收藏功能，請檢查網絡連接並稍後再試</p>
+                <ion-button expand="block" onclick="window.location.reload()">重試</ion-button>
+                <ion-button expand="block" fill="outline" href="index.html">返回首頁</ion-button>
+            </div>
+        `;
+    }
 
     // 從API加載用戶收藏
     async function loadBookmarks() {

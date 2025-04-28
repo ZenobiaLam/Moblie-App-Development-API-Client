@@ -42,25 +42,23 @@
       </ion-header>
 
       <ion-content>
-        <ion-tabs>
-          <ion-tab-bar slot="top">
-            <ion-tab-button tab="login">
+        <!-- 簡單的分段控制器，替代ion-tabs -->
+        <div class="ion-padding">
+          <ion-segment id="auth-segment" value="login">
+            <ion-segment-button value="login">
               <ion-label>
                 <span class="zh">登入</span>
                 <span class="en">Login</span>
               </ion-label>
-            </ion-tab-button>
-            <ion-tab-button tab="signup">
+            </ion-segment-button>
+            <ion-segment-button value="signup">
               <ion-label>
                 <span class="zh">註冊</span>
                 <span class="en">Register</span>
               </ion-label>
-            </ion-tab-button>
-          </ion-tab-bar>
-
-          <!-- 登入頁面 -->
-          <ion-router-outlet></ion-router-outlet>
-        </ion-tabs>
+            </ion-segment-button>
+          </ion-segment>
+        </div>
 
         <!-- 登入表單 -->
         <div id="login-form" class="ion-padding">
@@ -157,32 +155,21 @@
     <script>
       document.addEventListener("DOMContentLoaded", function () {
         // 獲取DOM元素
-        const loginTab = document.querySelector('ion-tab-button[tab="login"]');
-        const signupTab = document.querySelector(
-          'ion-tab-button[tab="signup"]'
-        );
+        const authSegment = document.getElementById('auth-segment');
         const loginForm = document.getElementById("login-form");
         const signupForm = document.getElementById("signup-form");
 
         // 當前表單
         let currentForm = "login";
 
-        // 設置tab點擊事件
-        loginTab.addEventListener("click", () => {
-          showForm("login");
-        });
-
-        signupTab.addEventListener("click", () => {
-          showForm("signup");
+        // 設置分段控制器事件
+        authSegment.addEventListener('ionChange', function(ev) {
+          showForm(ev.detail.value);
         });
 
         // 顯示表單函數
         function showForm(formName) {
           currentForm = formName;
-
-          // 更新tab樣式
-          loginTab.classList.toggle("tab-selected", formName === "login");
-          signupTab.classList.toggle("tab-selected", formName === "signup");
 
           // 顯示/隱藏對應表單
           loginForm.style.display = formName === "login" ? "block" : "none";
