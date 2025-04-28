@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>登入 / 註冊 | Login / Register</title>
+
+    <!-- Ionic 框架 CDN -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@ionic/core/css/ionic.bundle.css"
+    />
+    <script
+      type="module"
+      src="https://cdn.jsdelivr.net/npm/@ionic/core/dist/ionic/ionic.esm.js"
+    ></script>
+    <script
+      nomodule
+      src="https://cdn.jsdelivr.net/npm/@ionic/core/dist/ionic/ionic.js"
+    ></script>
+
+    <!-- 自定義樣式 -->
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <ion-app>
+      <ion-header>
+        <ion-toolbar color="primary">
+          <ion-buttons slot="start">
+            <ion-back-button default-href="index.html"></ion-back-button>
+          </ion-buttons>
+          <ion-title>
+            <span class="zh">登入 / 註冊</span>
+            <span class="en">Login / Register</span>
+          </ion-title>
+          <ion-buttons slot="end">
+            <ion-button id="language-toggle">
+              <ion-icon slot="icon-only" name="language-outline"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+
+      <ion-content>
+        <ion-tabs>
+          <ion-tab-bar slot="top">
+            <ion-tab-button tab="login">
+              <ion-label>
+                <span class="zh">登入</span>
+                <span class="en">Login</span>
+              </ion-label>
+            </ion-tab-button>
+            <ion-tab-button tab="signup">
+              <ion-label>
+                <span class="zh">註冊</span>
+                <span class="en">Register</span>
+              </ion-label>
+            </ion-tab-button>
+          </ion-tab-bar>
+
+          <!-- 登入頁面 -->
+          <ion-router-outlet></ion-router-outlet>
+        </ion-tabs>
+
+        <!-- 登入表單 -->
+        <div id="login-form" class="ion-padding">
+          <ion-item>
+            <ion-label position="floating">
+              <span class="zh">用戶名</span>
+              <span class="en">Username</span>
+            </ion-label>
+            <ion-input
+              type="text"
+              id="login-username"
+              placeholder="請輸入用戶名"
+            ></ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="floating">
+              <span class="zh">密碼</span>
+              <span class="en">Password</span>
+            </ion-label>
+            <ion-input
+              type="password"
+              id="login-password"
+              placeholder="請輸入密碼"
+            ></ion-input>
+          </ion-item>
+
+          <div class="ion-padding-top">
+            <ion-button id="login-button" expand="block">
+              <span class="zh">登入</span>
+              <span class="en">Login</span>
+            </ion-button>
+          </div>
+
+          <div class="message-box" id="login-message"></div>
+        </div>
+
+        <!-- 註冊表單 -->
+        <div id="signup-form" class="ion-padding" style="display: none">
+          <ion-item>
+            <ion-label position="floating">
+              <span class="zh">用戶名</span>
+              <span class="en">Username</span>
+            </ion-label>
+            <ion-input
+              type="text"
+              id="signup-username"
+              placeholder="請輸入用戶名"
+            ></ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="floating">
+              <span class="zh">密碼</span>
+              <span class="en">Password</span>
+            </ion-label>
+            <ion-input
+              type="password"
+              id="signup-password"
+              placeholder="請輸入密碼"
+            ></ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="floating">
+              <span class="zh">確認密碼</span>
+              <span class="en">Confirm Password</span>
+            </ion-label>
+            <ion-input
+              type="password"
+              id="signup-confirm-password"
+              placeholder="請再次輸入密碼"
+            ></ion-input>
+          </ion-item>
+
+          <div class="ion-padding-top">
+            <ion-button id="signup-button" expand="block">
+              <span class="zh">註冊</span>
+              <span class="en">Register</span>
+            </ion-button>
+          </div>
+
+          <div class="message-box" id="signup-message"></div>
+        </div>
+      </ion-content>
+    </ion-app>
+
+    <!-- 自定義 JavaScript -->
+    <script src="js/data.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/language.js"></script>
+    <script src="js/auth.js"></script>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        // 獲取DOM元素
+        const loginTab = document.querySelector('ion-tab-button[tab="login"]');
+        const signupTab = document.querySelector(
+          'ion-tab-button[tab="signup"]'
+        );
+        const loginForm = document.getElementById("login-form");
+        const signupForm = document.getElementById("signup-form");
+
+        // 當前表單
+        let currentForm = "login";
+
+        // 設置tab點擊事件
+        loginTab.addEventListener("click", () => {
+          showForm("login");
+        });
+
+        signupTab.addEventListener("click", () => {
+          showForm("signup");
+        });
+
+        // 顯示表單函數
+        function showForm(formName) {
+          currentForm = formName;
+
+          // 更新tab樣式
+          loginTab.classList.toggle("tab-selected", formName === "login");
+          signupTab.classList.toggle("tab-selected", formName === "signup");
+
+          // 顯示/隱藏對應表單
+          loginForm.style.display = formName === "login" ? "block" : "none";
+          signupForm.style.display = formName === "signup" ? "block" : "none";
+        }
+
+        // 初始顯示登入表單
+        showForm("login");
+      });
+    </script>
+  </body>
+</html>

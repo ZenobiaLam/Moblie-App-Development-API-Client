@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>瑜伽動作詳細資訊 | Yoga Pose Details</title>
+
+    <!-- Ionic 框架 CDN -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@ionic/core/css/ionic.bundle.css"
+    />
+    <script
+      type="module"
+      src="https://cdn.jsdelivr.net/npm/@ionic/core/dist/ionic/ionic.esm.js"
+    ></script>
+    <script
+      nomodule
+      src="https://cdn.jsdelivr.net/npm/@ionic/core/dist/ionic/ionic.js"
+    ></script>
+
+    <!-- 自定義樣式 -->
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <ion-app>
+      <ion-header>
+        <ion-toolbar color="primary">
+          <ion-buttons slot="start">
+            <ion-back-button
+              default-href="index.html"
+              href="index.html"
+              text="返回"
+              data-en-text="Back"
+            ></ion-back-button>
+          </ion-buttons>
+          <ion-title id="yoga-title">
+            <span class="zh">瑜伽動作詳細資訊</span>
+            <span class="en">Yoga Pose Details</span>
+          </ion-title>
+          <ion-buttons slot="end">
+            <ion-button id="language-toggle">
+              <ion-icon slot="icon-only" name="language-outline"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+
+      <ion-content>
+        <div class="ion-padding">
+          <ion-card>
+            <img id="yoga-image" src="" alt="" />
+            <ion-card-header>
+              <ion-card-title>
+                <span id="yoga-name" class="zh"></span>
+                <span id="yoga-name-en" class="en"></span>
+                <ion-icon
+                  name="bookmark-outline"
+                  id="bookmark-button"
+                ></ion-icon>
+              </ion-card-title>
+              <ion-card-subtitle>
+                <span id="yoga-difficulty"></span>
+              </ion-card-subtitle>
+            </ion-card-header>
+            <ion-card-content>
+              <h2 class="zh">效果</h2>
+              <h2 class="en">Effect</h2>
+              <p id="yoga-effect" class="zh"></p>
+              <p id="yoga-effect-en" class="en"></p>
+
+              <h2 class="zh">注意事項</h2>
+              <h2 class="en">Caution</h2>
+              <p id="yoga-caution" class="zh"></p>
+              <p id="yoga-caution-en" class="en"></p>
+
+              <h2 class="zh">示範影片</h2>
+              <h2 class="en">Demonstration Video</h2>
+              <iframe
+                id="yoga-video"
+                width="100%"
+                height="315"
+                src="https://www.youtube.com/embed/xxxxxxxx"
+                frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowfullscreen
+              ></iframe>
+            </ion-card-content>
+          </ion-card>
+        </div>
+      </ion-content>
+    </ion-app>
+
+    <!-- 自定義 JavaScript -->
+    <script src="js/data.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/language.js"></script>
+    <script src="js/detail.js"></script>
+  </body>
+</html>
