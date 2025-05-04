@@ -1,10 +1,10 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     // 獲取DOM元素
     const searchbar = document.getElementById('searchbar');
     const difficultyFilter = document.getElementById('difficulty-filter');
     const effectFilter = document.getElementById('effect-filter');
     const yogaList = document.getElementById('yoga-list');
-    
+
     // 當前過濾條件
     let currentFilters = {
         search: '',
@@ -14,40 +14,40 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 全局儲存瑜伽動作
     let yogaActionsData = [];
-    
+
     // 分頁參數
     let pagination = {
         page: 1,
         limit: 10,
         hasMore: true
     };
-    
+
     // 確保images目錄存在並下載測試圖片
     ensureImagesDirectory();
-    
+
     // 初始化頁面 - 從API獲取數據
     loadYogaActions();
-    
+
     // 事件監聽器
     searchbar.addEventListener('ionInput', handleSearch);
     difficultyFilter.addEventListener('ionChange', handleDifficultyFilter);
     effectFilter.addEventListener('ionChange', handleEffectFilter);
-    
+
     // 確保images目錄存在並下載測試圖片
     function ensureImagesDirectory() {
         // 創建一個測試圖片
         const testImage = new Image();
-        testImage.onload = function() {
+        testImage.onload = function () {
             console.log('測試圖片加載成功');
         };
-        testImage.onerror = function() {
+        testImage.onerror = function () {
             console.log('測試圖片加載失敗，可能是images目錄不存在');
         };
-        
+
         // 嘗試加載測試圖片
         testImage.src = 'images/placeholder.txt?' + new Date().getTime();
     }
-    
+
     // 從API加載瑜伽動作
     async function loadYogaActions(isLoadMore = false) {
         try {
@@ -56,7 +56,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 pagination.page = 1;
                 pagination.hasMore = true;
                 yogaActionsData = [];
-                
+
                 // 顯示載入中動畫
                 yogaList.innerHTML = `
                     <div class="ion-padding ion-text-center">
@@ -75,28 +75,28 @@ document.addEventListener('DOMContentLoaded', function() {
                     loadMoreButton.disabled = true;
                 }
             }
-            
+
             // 構建請求參數
             const params = {
                 page: pagination.page,
                 limit: pagination.limit
             };
-            
+
             // 如果有搜索詞，添加到參數
             if (currentFilters.search) {
                 params.search = currentFilters.search;
             }
-            
+
             // 如果有難度過濾，添加到參數
             if (currentFilters.difficulty !== 'all') {
                 params.difficulty = currentFilters.difficulty;
             }
-            
+
             // 從API獲取瑜伽動作
             console.log('請求參數:', params);
             const data = await API.yoga.getYogaActions(params);
             console.log('API返回瑜伽數據:', data);
-            
+
             // 檢查API返回的數據結構
             let newPoses = [];
             if (Array.isArray(data)) {
@@ -120,94 +120,94 @@ document.addEventListener('DOMContentLoaded', function() {
                         break;
                     }
                 }
-                
+
                 // 如果仍然未找到陣列，設為空陣列
                 if (!newPoses || newPoses.length === 0) {
                     newPoses = [];
                     console.error('未能識別API返回的數據結構:', data);
                 }
             }
-            
+
             // 檢查是否還有更多數據可加載
             pagination.hasMore = newPoses.length >= pagination.limit;
-            
+
             // 如果加載更多，將新數據添加到現有數據中
             if (isLoadMore) {
                 yogaActionsData = [...yogaActionsData, ...newPoses];
             } else {
                 yogaActionsData = newPoses;
             }
-            
+
             // 為下一次加載更多準備
             pagination.page += 1;
-            
+
             console.log('處理後的瑜伽數據:', yogaActionsData);
-            
+
             // 檢查第一個項目的結構
             if (yogaActionsData.length > 0) {
                 console.log('第一個瑜伽動作項目結構:', yogaActionsData[0]);
-                
+
                 // 檢查並修正可能缺少的屬性
                 yogaActionsData = yogaActionsData.map(pose => {
                     // 確保所有必要的屬性都存在
                     const processedPose = { ...pose };
-                    
+
                     // 處理可能的命名差異
                     if (!processedPose.name && processedPose.name_zh) processedPose.name = processedPose.name_zh;
                     if (!processedPose.name && processedPose.title) processedPose.name = processedPose.title;
                     if (!processedPose.name && processedPose.title_zh) processedPose.name = processedPose.title_zh;
-                    
+
                     if (!processedPose.name_en && processedPose.english_name) processedPose.name_en = processedPose.english_name;
                     if (!processedPose.name_en && processedPose.title_en) processedPose.name_en = processedPose.title_en;
-                    
+
                     if (!processedPose.effect && processedPose.description) processedPose.effect = processedPose.description;
                     if (!processedPose.effect && processedPose.description_zh) processedPose.effect = processedPose.description_zh;
-                    
+
                     if (!processedPose.effect_en && processedPose.english_description) processedPose.effect_en = processedPose.english_description;
                     if (!processedPose.effect_en && processedPose.description_en) processedPose.effect_en = processedPose.description_en;
-                    
+
                     if (!processedPose.image && processedPose.imageUrl) processedPose.image = processedPose.imageUrl;
                     if (!processedPose.image && processedPose.img) processedPose.image = processedPose.img;
                     if (!processedPose.image && processedPose.picture) processedPose.image = processedPose.picture;
-                    
+
                     if (!processedPose.difficulty && processedPose.level) processedPose.difficulty = processedPose.level;
-                    
+
                     // 確保ID是數字
                     if (typeof processedPose.id === 'string') {
                         processedPose.id = parseInt(processedPose.id);
                     }
-                    
+
                     // 提供默認值
                     if (!processedPose.name) processedPose.name = '未命名瑜伽動作';
                     if (!processedPose.name_en) processedPose.name_en = 'Unnamed Yoga Pose';
                     if (!processedPose.effect) processedPose.effect = '暫無描述';
                     if (!processedPose.effect_en) processedPose.effect_en = 'No description available';
                     if (!processedPose.difficulty) processedPose.difficulty = 'beginner';
-                    if (!processedPose.image) processedPose.image = 'https://via.placeholder.com/150?text=No+Image';
-                    
+                    if (!processedPose.image_url) processedPose.image_url = 'https://via.placeholder.com/150?text=No+Image';
+
                     return processedPose;
                 });
-                
+
                 console.log('處理後的第一個瑜伽動作項目:', yogaActionsData[0]);
             }
-            
+
             // 確保所有資料都有效果標籤
             processYogaData(yogaActionsData);
-            
+
             // 本地過濾效果（假設API不支持按效果過濾）
             applyFilters();
         } catch (error) {
             console.error('載入瑜伽動作失敗:', error);
-            
+
             // 如果有錯誤發生，使用本地數據
             if (typeof yogaPoses !== 'undefined' && Array.isArray(yogaPoses)) {
                 console.log('錯誤發生，使用本地數據作為備份');
-                
+
                 // 如果是加載更多，只使用尚未加載的部分
                 if (isLoadMore) {
                     const startIndex = yogaActionsData.length;
                     const newPoses = yogaPoses.slice(startIndex, startIndex + pagination.limit);
-                    
+
                     if (newPoses.length > 0) {
                         yogaActionsData = [...yogaActionsData, ...newPoses];
                         pagination.hasMore = yogaActionsData.length < yogaPoses.length;
@@ -220,13 +220,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     pagination.hasMore = yogaActionsData.length < yogaPoses.length;
                     pagination.page = 2;
                 }
-                
+
                 // 確保所有瑜伽動作有效果標籤
                 processYogaData(yogaActionsData);
-                
+
                 // 應用過濾和渲染
                 applyFilters();
-                
+
                 // 顯示提示訊息
                 const toast = document.createElement('ion-toast');
                 toast.message = '當前使用離線數據，部分功能可能受限';
@@ -255,7 +255,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         loadMoreButton.innerHTML = '載入更多';
                         loadMoreButton.disabled = false;
                     }
-                    
+
                     const toast = document.createElement('ion-toast');
                     toast.message = '載入更多數據失敗，請稍後再試';
                     toast.duration = 3000;
@@ -267,33 +267,33 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     }
-    
+
     // 處理瑜伽數據，確保有效果標籤
     function processYogaData(data) {
         // 確保瑜伽動作有效果標籤
         data.forEach(pose => {
             if (!pose.effectTags) {
                 pose.effectTags = [];
-                
+
                 // 根據效果描述添加標籤
                 const effect = pose.effect || '';
-                
+
                 if (effect.includes('強化') || effect.includes('力量')) {
                     pose.effectTags.push('strength');
                 }
-                
+
                 if (effect.includes('伸展') || effect.includes('靈活性') || effect.includes('柔軟')) {
                     pose.effectTags.push('flexibility');
                 }
-                
+
                 if (effect.includes('平衡')) {
                     pose.effectTags.push('balance');
                 }
-                
+
                 if (effect.includes('放鬆') || effect.includes('舒緩') || effect.includes('減壓')) {
                     pose.effectTags.push('relax');
                 }
-                
+
                 // 如果沒有標籤，添加一個預設標籤
                 if (pose.effectTags.length === 0) {
                     pose.effectTags.push('balance');
@@ -301,47 +301,47 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-    
+
     // 搜尋處理函數
     function handleSearch(event) {
         currentFilters.search = event.target.value.toLowerCase();
         loadYogaActions(); // 重新從API載入，使用搜尋參數
     }
-    
+
     // 難度過濾處理函數
     function handleDifficultyFilter(event) {
         currentFilters.difficulty = event.target.value;
         loadYogaActions(); // 重新從API載入，使用難度參數
     }
-    
+
     // 效果過濾處理函數
     function handleEffectFilter(event) {
         currentFilters.effect = event.target.value;
         applyFilters(); // 本地過濾效果標籤
     }
-    
+
     // 應用過濾條件
     function applyFilters() {
         const isEnglish = document.documentElement.getAttribute('lang') === 'en';
-        
+
         const filteredPoses = yogaActionsData.filter(pose => {
             // 效果過濾 (本地過濾)
-            const matchesEffect = currentFilters.effect === 'all' || 
-                                 (pose.effectTags && pose.effectTags.includes(currentFilters.effect));
-            
+            const matchesEffect = currentFilters.effect === 'all' ||
+                (pose.effectTags && pose.effectTags.includes(currentFilters.effect));
+
             return matchesEffect;
         });
-        
+
         renderYogaList(filteredPoses);
     }
-    
+
     // 渲染瑜伽動作列表
     function renderYogaList(poses) {
         // 清空當前列表
         yogaList.innerHTML = '';
-        
+
         const isEnglish = document.documentElement.getAttribute('lang') === 'en';
-        
+
         if (poses.length === 0) {
             yogaList.innerHTML = `
                 <ion-item>
@@ -352,7 +352,7 @@ document.addEventListener('DOMContentLoaded', function() {
             `;
             return;
         }
-        
+
         // 定義難度對應的中文
         const difficultyMap = {
             'beginner': '初級',
@@ -367,32 +367,33 @@ document.addEventListener('DOMContentLoaded', function() {
             'balance': '改善平衡',
             'relax': '放鬆減壓'
         };
-        
+
         // 為每個動作創建列表項
         poses.forEach(pose => {
             // 確保圖片URL是有效的
-            let imageUrl = pose.image || pose.imageUrl || pose.img || pose.picture;
-            
+            let imageUrl = pose.image || pose.imageUrl || pose.img || pose.picture || pose.image_url;
+            console.log('pose:', pose)
+
             const item = document.createElement('ion-item');
             item.setAttribute('button', true);
             item.setAttribute('detail', false);
             item.setAttribute('lines', 'none');
             item.classList.add('animate-fade-in');
-            
+
             // 設置點擊事件
             item.addEventListener('click', () => {
-                window.location.href = `detail.html?id=${pose.id}`;
+                window.location.href = `detail.html?id=${pose.id}&title=${pose.title}`;
             });
-            
+
             // 創建效果標籤HTML
             const effectTagsHTML = (pose.effectTags || []).map(tag => {
                 return `<span class="tag ${tag}">${isEnglish ? tag : (effectTags[tag] || tag)}</span>`;
             }).join('');
-            
+
             // 獲取難度顯示
             const difficulty = pose.difficulty || pose.level || 'beginner';
             const difficultyDisplay = isEnglish ? difficulty : (difficultyMap[difficulty] || difficulty);
-            
+
             // 設置動作列表項內容
             item.innerHTML = `
                 <div class="yoga-item-content">
@@ -424,26 +425,26 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                 </div>
             `;
-            
+
             yogaList.appendChild(item);
         });
-        
+
         // 添加載入更多按鈕(如果還有更多數據)
         if (pagination.hasMore) {
             const loadMoreItem = document.createElement('ion-item');
             loadMoreItem.classList.add('ion-text-center');
             loadMoreItem.lines = 'none';
-            
+
             const loadMoreButton = document.createElement('ion-button');
             loadMoreButton.id = 'load-more-button';
             loadMoreButton.expand = 'block';
             loadMoreButton.fill = 'outline';
             loadMoreButton.innerHTML = isEnglish ? 'Load More' : '載入更多';
-            
+
             loadMoreButton.addEventListener('click', () => {
                 loadYogaActions(true); // 傳入true表示這是加載更多
             });
-            
+
             loadMoreItem.appendChild(loadMoreButton);
             yogaList.appendChild(loadMoreItem);
         }
@@ -455,7 +456,7 @@ document.addEventListener('DOMContentLoaded', function() {
     async function checkUserAuth() {
         try {
             const { isLoggedIn, user } = await API.auth.checkAuth();
-            
+
             if (isLoggedIn) {
                 // 添加用戶信息和登出按鈕到頂部工具欄
                 const toolbar = document.querySelector('ion-toolbar');
@@ -465,11 +466,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     <ion-icon slot="start" name="person-outline"></ion-icon>
                     ${user || '用戶'}
                 `;
-                
+
                 // 插入到工具欄的前面位置
                 const existingButtons = document.querySelector('ion-buttons[slot="end"]');
                 existingButtons.prepend(userButton);
-                
+
                 // 添加登出按鈕
                 const logoutButton = document.createElement('ion-button');
                 logoutButton.setAttribute('slot', 'end');
@@ -477,7 +478,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <ion-icon slot="icon-only" name="log-out-outline"></ion-icon>
                 `;
                 logoutButton.addEventListener('click', handleLogout);
-                
+
                 existingButtons.prepend(logoutButton);
             } else {
                 // 添加登入按鈕
@@ -491,7 +492,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 loginButton.addEventListener('click', () => {
                     window.location.href = 'login.html';
                 });
-                
+
                 // 插入到工具欄
                 const existingButtons = document.querySelector('ion-buttons[slot="end"]');
                 existingButtons.prepend(loginButton);
@@ -514,7 +515,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // 將 loadYogaActions 設為全局可訪問（帶有默認參數）
-    window.loadYogaActions = function() {
+    window.loadYogaActions = function () {
         loadYogaActions(false);
     };
 }); 
